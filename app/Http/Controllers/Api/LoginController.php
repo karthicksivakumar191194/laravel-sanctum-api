@@ -13,6 +13,8 @@ use App\Models\User;
 class LoginController extends Controller
 {
     public function login(Request $request){
+        $authenticateVia = $request->header('Authentication', 'token');
+
         $fields = $request->validate([
             'email' => 'required|string',
             'password' => 'required|string',
@@ -21,16 +23,23 @@ class LoginController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw \ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
-    
-        $token = $user->createToken('myapptoken')->plainTextToken;
 
-        $response = [
-            'token' => $token,
-        ];
+        $response = [];
+
+        if($authenticateVia === "cookie"){
+            $credentials = $request->only('email', 'password');
+            if(Auth::attempt($credentials)){
+                $loggedInUser = Auth::user();      
+                $response = ['id' => $loggedInUser->id, 'name' => $loggedInUser->name, 'email' => $loggedInUser->email ];
+            }
+        }else{
+            $token = $user->createToken('myapptoken')->plainTextToken;
+            $response = ['token' => $token];
+        }
 
         return response($response, 201);
     }

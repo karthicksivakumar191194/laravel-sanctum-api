@@ -39,18 +39,6 @@
                             </div>
                         </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6 offset-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-                                    <label class="form-check-label" for="remember">
-                                        {{ __('Remember Me') }}
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="row mb-0">
                             <div class="col-md-8 offset-md-4">
                                 <button type="submit" class="btn btn-primary">
@@ -65,9 +53,38 @@
                             </div>
                         </div>
                     </form>
+                    <hr>
+                    <button class="btn btn-primary" onclick="testAPI()">Test Authenticated API Endpoint</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+    window.axios.defaults.withCredentials = true;
+
+    $(document).ready(function () {
+        axios.get('/sanctum/csrf-cookie').then(response => {
+          // Login...
+        });
+
+        $("form").submit(function (event) {			
+            var formData = {
+              email: $("#email").val(),
+              password: $("#password").val(),
+            };
+
+            axios.post('http://localhost:8000/api/login', formData)
+           .then(response => console.log(response));
+
+            event.preventDefault();
+        });
+	});
+
+    function testAPI(){
+        axios.get('http://localhost:8000/api/myprofile').then(response => {
+         console.log(response);
+        });
+    }
+</script>
 @endsection
